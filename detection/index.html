@@ -3,7 +3,7 @@
 
 <head>
 
-<title>CNV Detection</title>
+<title>CNV Detection Pipeline</title>
 
 <link rel="stylesheet" href="../style.css">
 
@@ -15,9 +15,30 @@
 <header>
 
 <h1>CNV Detection</h1>
+<h2>Overview</h2>
 
 <p>
-Identification of copy number variants using read-depth based methods
+Copy number variations (CNVs) are genomic alterations involving
+deletions or duplications of DNA segments. This workflow identifies
+There are four main methods of detecting CNVs with NGS data:
+
+<ol>
+
+<li>Read-Pair (RP)</li>
+
+<li>Split-Read (SR)</li>
+
+<li>Read-Depth (RD)</li>
+
+<li>Assembly (AS)</li>
+
+</ol>
+
+Each of these four methods specializes in detecting a specific form or size range of CNV,
+resulting in a trade-off in breakpoint accuracy. None of these methodologies is perfect; 
+each brings advantages and disadvantages. To address this, many labs combine different methods,
+such as read-depths with read-pairs, or read-depths with split-reads, to achieve a more holistic analysis.
+
 </p>
 
 </header>
