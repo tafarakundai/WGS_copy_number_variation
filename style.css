@@ -1,1 +1,119 @@
+/* General page styling */
 
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+    color: #333;
+}
+
+
+/* Header */
+
+header {
+    background-color: #1f4e79;
+    color: white;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+
+header h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+
+header p {
+    font-size: 18px;
+}
+
+
+
+/* Sections */
+
+section {
+    background: white;
+    margin: 30px auto;
+    padding: 25px;
+    max-width: 1000px;
+    border-radius: 10px;
+}
+
+
+h2 {
+    color: #1f4e79;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+}
+
+
+
+/* Workflow boxes */
+
+.workflow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+
+.workflow div {
+
+    background-color: #eef4fb;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+
+}
+
+
+.workflow h3 {
+
+    color: #1f4e79;
+
+}
+
+
+
+/* Links */
+
+a {
+
+    color: #1f4e79;
+    text-decoration: none;
+    font-weight: bold;
+
+}
+
+
+a:hover {
+
+    text-decoration: underline;
+
+}
+
+
+
+/* Lists */
+
+li {
+
+    margin: 10px;
+
+}
+
+
+
+/* Footer */
+
+footer {
+
+    text-align: center;
+    background-color: #1f4e79;
+    color: white;
+    padding: 20px;
+    margin-top: 40px;
+
+}
