@@ -1,1 +1,117 @@
+# STEP 1: CONVERT THE TEXT FILE WITH THE CNVs to VCF 
+
+#!/bin/bash
+
+input="CNVRs.txt"
+output="CNVRs.vcf"
+
+# Create VCF header
+cat << EOF > $output
+##fileformat=VCFv4.2
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=DUP,Description="Duplication">
+##ALT=<ID=CNV,Description="Copy number variant">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+EOF
+
+# Process the data file (skip header line)
+awk 'BEGIN {OFS="\t"} 
+NR > 1 {
+  chrom=$1; start=$2; end=$3; ref=$5; alt=$4; type=$5
+  
+  # Map CNV types to VCF format
+  if (type == "deletion") {
+    alt_field = "<DEL>"
+    svtype = "DEL"
+  } else if (type == "duplication") {
+    alt_field = "<DUP>"
+    svtype = "DUP"
+  } else if (type == "mixed") {
+    alt_field = "<CNV>"
+    svtype = "CNV"
+  } else {
+    alt_field = "<CNV>"
+    svtype = "CNV"
+  }
+  
+  id = "."
+  ref_field = "N"  # Standard reference for structural variants
+  qual = "."
+  filter = "PASS"
+  info = "END=" end ";SVTYPE=" svtype
+  
+  print chrom, start, id, ref_field, alt_field, qual, filter, info
+}' $input >> $output
+
+echo "VCF file generated: $output"
+echo "Number of variants processed: $(( $(wc -l < $output) - $(grep -c "^#" $output) ))"
+
+
+# STEP 2: CONVERT VCF TO ANNOVAR FORMAT
+
+#!/bin/bash
+
+# Manual conversion using awk
+awk 'BEGIN{OFS="\t"} !/^#/ {
+  # Parse INFO field to extract END value
+  split($8, info, ";");
+  end = "";
+  svtype = "";
+  
+  for(i in info) {
+    split(info[i], kv, "=");
+    if(kv[1]=="END") end=kv[2];
+    if(kv[1]=="SVTYPE") svtype=kv[2];
+  }
+  
+  # Use the specific ALT field from your VCF (which has <DEL>, <DUP>, <CNV>)
+  alt_field = $5;
+  
+  # ANNOVAR format: chr, start, end, ref, alt
+  # For structural variants: chr, start, end, 0, <SVTYPE>
+  print $1, $2, end, "0", alt_field
+}' CNVRs.vcf > CNVRs_manual.avinput
+
+echo "Manual ANNOVAR input file generated: CNVRs_manual.avinput"
+
+# STEP 3 OPEN THE FILE and REPLACE <CNV> with 0
+
+# STEP 4 RUN ANNOVAR*
+#!/bin/bash
+
+# Set variables
+ANNOVAR_DIR="/apps/chpc/bio/annovar"
+WORK_DIR="/mnt/merge_two/annotation"
+DB_DIR="$WORK_DIR/annovar_db"
+SPECIES="custom"
+BUILD="GCF_029378745"
+
+# Change to working directory
+cd $WORK_DIR
+
+# Create database directory
+mkdir -p $DB_DIR/$SPECIES
+
+# Copy your bosindicus_refGene.txt to the database directory with proper naming
+cp $WORK_DIR/bosindicus_refGene.txt $DB_DIR/${SPECIES}/${BUILD}_refGene.txt
+
+# Run ANNOVAR annotation
+perl $ANNOVAR_DIR/annotate_variation.pl \
+    -geneanno \
+    -dbtype refGene \
+    -buildver $BUILD \
+    -out annotated_CNVs \
+    $WORK_DIR/CNVRs_manual.avinput \
+    $DB_DIR/$SPECIES/
+
+# The output files will be:
+# annotated_CNVs.variant_function - contains gene-based annotations
+# annotated_CNVs.exonic_variant_function - contains detailed exonic annotations (if any)
+
+echo "Annotation complete!"
+echo "Check the following output files:"
+echo "- annotated_CNVs.variant_function"
+echo "- annotated_CNVs.exonic_variant_function"
 
