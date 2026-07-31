@@ -78,7 +78,9 @@ echo "Manual ANNOVAR input file generated: CNVRs_manual.avinput"
 
 # STEP 3 OPEN THE FILE and REPLACE <CNV> with 0
 
-# STEP 4 RUN ANNOVAR*
+# STEP 4 RUN ANNOVAR
+# You can use built in database or create your own depending on which species you are working on
+
 #!/bin/bash
 
 # Set variables
