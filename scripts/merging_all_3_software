@@ -1,1 +1,137 @@
+#!/bin/bash
+
+# Intersection for all three softwares 
+#1 CONVERT THE FILES TO BED FORMAT 
+
+# Convert each file to BED format
+awk 'BEGIN{OFS="\t"} NR>1 {print $1, $2, $3}' CNVnator.tsv > CNVnator.bed
+awk 'BEGIN{OFS="\t"} NR>1 {print $1, $2, $3}' CNVcaller.tsv > CNVcaller.bed
+awk 'BEGIN{OFS="\t"} NR>1 {print $1, $2, $3}' Lumpy.txt > Lumpy.bed
+
+# Sort the BED files
+bedtools sort -i CNVnator.bed > CNVnator.sorted.bed
+bedtools sort -i CNVcaller.bed > CNVcaller.sorted.bed
+bedtools sort -i Lumpy.bed > Lumpy.sorted.bed
+
+#2 FIND INTERSECTIONS 
+
+# Find regions present in ALL THREE files (true consensus)
+bedtools multiinter -i CNVnator.sorted.bed CNVcaller.sorted.bed Lumpy.sorted.bed | awk '$4 == 3' | cut -f1-3 > strict_consensus_regions.bed
+
+bedtools multiinter -i CNVnator.sorted.bed CNVcaller.sorted.bed Lumpy.sorted.bed | 
+awk '$4 == 2' |  # Only regions with 2/3 callers
+cut -f1-3 > two_consensus_regions.bed
+
+# Breed processing
+
+# Process CNVnator (TSV)
+bedtools intersect -a CNVnator.tsv -b strict_consensus_regions.bed -wa -header > CNVnator_consensus.tsv
+
+# Process CNVcaller (TSV)
+bedtools intersect -a CNVcaller.tsv -b strict_consensus_regions.bed -wa -header > CNVcaller_consensus.tsv
+
+# Process Lumpy (TXT)
+bedtools intersect -a Lumpy.txt -b strict_consensus_regions.bed -wa -header > Lumpy_consensus.tsv
+
+
+# Run breed stats to develop the breed matrix
+# check file in scripts folder
+
+ python breed_consensus.py
+
+# File 1 shows you which specific caller detected each CNV
+# File 2 shows you the total CNV burden across all callers for each genomic region
+# The higher values in File 2 (like 5 duplications vs 1 in File 1) suggest that when multiple callers agree on a region,
+their individual calls get summed together, giving you a consensus strength measure
+
+# Outputs several files, for the next step use breed_stats_summary.tsv
+
+# Run breed statistics
+# check file in scripts folder
+
+python final_breed_stats.py
+
+
+# Run CNV size stats
+#First calculate CNV sizes 
+
+python cnvsize.py
+
+# Plot the graph
+
+python plot_cnv_size.py
+
+#First run the below code to have the CNV region type 
+
+python chrom_type.py
+
+#Rename the chromosome names, make sure you have the chrom_map.txt file in the folder 
+
+./rename.sh
+
+#Now run the plotting 
+
+python chromplot.py
+
+#Try chrom plot with distance 
+python chromplot2.py
+
+# Plotting 
+
+python barplot.py 
+
+python pie.py
+
+# Population differentiation 
+
+# Need a matrix with all individuals and CNV score 
+
+./allthree_matrix.sh 
+
+#Copy the matrix to VST folder 
+
+#Run VST stats 
+
+python vst.py 
+
+# Plot heatmap
+
+python heatmap.py 
+
+python clustered_heatmap.py
+
+#take the annotated CNV file 
+#take the top 5% and top 1% regions and annotate, do the enrichment analysis 
+
+##########################################################################
+
+# Repeat the process for two software only 
+#Copy lumpy and cnvnator output 
+
+#1 ./convert_to_bed.sh 
+
+#2 Run intersection
+
+bedtools intersect -a Lumpy.sorted.bed -b CNVnator.sorted.bed -wa -r -f 0.5 | uniq > Lumpy_consensus.bed
+
+bedtools intersect -a CNVnator.sorted.bed -b Lumpy.sorted.bed -wa -r -f 0.5 | uniq > CNVnator_consensus.bed
+
+#Creating combined consensus set
+cat Lumpy_consensus.bed CNVnator_consensus.bed | sort -k1,1 -k2,2n -k3,3n | uniq > combined_consensus.bed
+
+********OR USE THIS 
+cat Lumpy_consensus.bed CNVnator_consensus.bed \
+| sort -k1,1 -k2,2n -k3,3n \
+| uniq \
+| bedtools merge -i - > merged_consensus.bed
+
+# Breed MATRIX
+bedtools intersect -a Lumpy.txt -b combined_consensus.bed -wa -header -r -f 0.5 | sort -u > Lumpy_consensus.tsv
+
+bedtools intersect -a CNVnator.tsv -b combined_consensus.bed -wa -header -r -f 0.5 | sort -u > CNVnator_consensus.tsv
+
+#Run breed stats to develop the breed matrix
+
+python breed_consensus.py
+
 
