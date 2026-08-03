@@ -1,6 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Scripts</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+    <h1>Pipeline Scripts</h1>
+    <p>
+        All scripts used in the WGS CNV detection, integration, and
+        annotation workflow, organized by pipeline step.
+    </p>
+</header>
+
+<section>
+<h2>Overview</h2>
+<p>
+See <a href="README.md">README.md</a> for a description of each script
+and how to run the pipeline end to end.
+</p>
+</section>
+
+<section>
 <h3 id="read-alignment">1. Read Alignment</h3>
+<ul>
+<li><a href="alignment.sh">alignment.sh</a></li>
+</ul>
+</section>
+
+<section>
 <h3 id="cnv-detection">2. CNV Detection</h3>
-<h3 id="sv-detection">3. Structural Variant Detection</h3>
-<h3 id="cnv-integration">4. CNV Integration</h3>
-<h3 id="cnv-annotation">5. CNV Annotation</h3>
-<h3 id="visualization">6. Visualization</h3>
+<ul>
+<li><a href="cnvnator.sh">cnvnator.sh</a></li>
+<li><a href="CNVcaller.sh">CNVcaller.sh</a></li>
+<li><a href="lumpy.sh">lumpy.sh</a></li>
+<li><a href="post_qc_filter_cnvnator.sh">post_qc_filter_cnvnator.sh</a></li>
+<li><a href="post_qc_filter_cnvcaller.sh">post_qc_filter_cnvcaller.sh</a></li>
+<li><a href="lumpy_genotype.sh">lumpy_genotype.sh</a></li>
+<li><a href="svtype.py">svtype.py</a></li>
+</ul>
+</section>
+
+<section>
+<h3 id="cnv-integration">3. CNV Integration</h3>
+<ul>
+<li><a href="merging_all3_tools.sh">merging_all3_tools.sh</a></li>
+<li><a href="merging_cnvnator.py">merging_cnvnator.py</a></li>
+<li><a href="merged_length_bins.sh">merged_length_bins.sh</a></li>
+<li><a href="merging_all_3_software/">merging_all_3_software/</a></li>
+<li><a href="merge_post_processing/">merge_post_processing/</a></li>
+</ul>
+</section>
+
+<section>
+<h3 id="cnv-annotation">4. CNV Annotation</h3>
+<ul>
+<li><a href="ANNOVAR.sh">ANNOVAR.sh</a></li>
+<li><a href="annotation_ANNOVAR/">annotation_ANNOVAR/</a></li>
+<li><a href="chrom_map.txt">chrom_map.txt</a></li>
+</ul>
+</section>
+
+<section>
+<h3 id="visualization">5. Visualization</h3>
+<ul>
+<li><a href="plot_merged_length_bins.py">plot_merged_length_bins.py</a></li>
+<li><a href="breed_sum_stats.sh">breed_sum_stats.sh</a></li>
+</ul>
+</section>
+
+<footer>
+<p>
+WGS Copy Number Variation Pipeline
+</p>
+</footer>
+</body>
+</html>
