@@ -200,17 +200,36 @@ Please note you might need to carry out a sensitivity analysis depending on the 
 <p>
 Once CNVs have been detected and merged into a consolidated call set, the final
 step is to annotate each variant with genomic context, such as overlapping genes,
-regulatory elements, and known functional regions. This step was carried out
-using ANNOVAR, guided by a chromosome mapping file to match variant coordinates
-to the reference genome build used in this study.
+regulatory elements, known functional regions, and trait-associated QTLs.
 </p>
-<ul>
-<li><a href="scripts/ANNOVAR.sh">ANNOVAR.sh</a></li>
-<li><a href="scripts/annotation_ANNOVAR/">annotation_ANNOVAR/</a></li>
-<li><a href="scripts/chrom_map.txt">chrom_map.txt</a></li>
-</ul>
-</section>
 
+<h3>Gene Annotation (ANNOVAR)</h3>
+<p>
+Gene-level annotation was carried out using ANNOVAR, guided by a chromosome mapping file
+to match variant coordinates to the reference genome build used in this study.
+</p>
+<p>
+<a href="scripts/ANNOVAR.sh">ANNOVAR.sh</a> &middot;
+<a href="scripts/annotation_ANNOVAR/">annotation_ANNOVAR/</a> &middot;
+<a href="scripts/chrom_map.txt">chrom_map.txt</a>
+</p>
+
+<h3>QTL Annotation</h3>
+<p>
+Candidate CNV regions (CNVRs) were also annotated against the
+<a href="https://www.animalgenome.org/cgi-bin/QTLdb/index" target="_blank" rel="noopener">AnimalQTLdb</a>
+to identify overlaps with known trait-associated QTLs. CNVR coordinates and the QTL database were
+converted to BED format, sorted, and intersected using <code>bedtools intersect</code> to find
+overlapping regions. Because AnimalQTLdb often contains multiple entries for the same QTL name
+(differing only by ID), a filtering step was applied to reduce redundancy: QTLs of the same trait
+falling within the same CNVR were merged into a single row, while QTLs of the same trait located
+in different CNVRs, or on different chromosomes, were retained as separate rows.
+</p>
+<p>
+<a href="scripts/QTL_annotation.sh">QTL_annotation.sh</a>
+</p>
+</section>
+    
 <section id="scripts">
 <h2>Pipeline Scripts</h2>
 <p>
@@ -249,6 +268,7 @@ of each script and how to run the pipeline end to end.
 <li><a href="scripts/ANNOVAR.sh">ANNOVAR.sh</a></li>
 <li><a href="scripts/annotation_ANNOVAR/">annotation_ANNOVAR/</a></li>
 <li><a href="scripts/chrom_map.txt">chrom_map.txt</a></li>
+<li><a href="scripts/QTL_annotation.sh">QTL_annotation.sh</a></li>
 </ul>
 
 <h3>5. Visualization</h3>
