@@ -144,3 +144,21 @@ footer {
     padding: 20px;
     margin-top: 40px;
 }
+
+.author-card {
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px 25px;
+}
+.author-card h3 {
+    border-bottom: none;
+    margin-top: 0;
+    margin-bottom: 4px;
+}
+.author-title {
+    color: #666;
+    font-style: italic;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
