@@ -1,18 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>WGS Copy Number Variation Pipeline</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
-
 <header>
     <h1>Whole Genome Sequencing Copy Number Variation Pipeline</h1>
     <p>
@@ -21,137 +15,266 @@
     </p>
 </header>
 
+<nav>
+    <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#read-alignment">1. Read Alignment</a></li>
+        <li><a href="#cnv-detection">2. CNV Detection</a></li>
+        <li><a href="#cnv-integration">3. CNV Integration</a></li>
+        <li><a href="#annotation">4. Annotation</a></li>
+        <li><a href="#scripts">Pipeline Scripts</a></li>
+        <li><a href="#resources">Resources</a></li>
+    </ul>
+</nav>
 
-<section>
-
+<section id="about">
 <h2>About the Pipeline</h2>
-
 <p>
 This repository contains scripts, documentation, training materials,
 and example resources for whole genome sequencing (WGS) copy number
 variation (CNV) analysis.
 </p>
-
 <p>
 The workflow integrates CNV detection methods including:
 </p>
-
 <ul>
 <li>CNVnator</li>
 <li>CNVcaller</li>
 <li>LUMPY Express</li>
 <li>CNV merging and annotation</li>
 </ul>
-
 </section>
 
-
-
-<section>
-
-<h2>Pipeline Workflow</h2>
-
-<div class="workflow">
-
-<div>
-<h3>1. Read Alignment</h3>
+<section id="read-alignment">
+<h2>1. Read Alignment</h2>
 <p>
 Prepare aligned BAM files from sequencing reads.
 </p>
-<a href="scripts/">View Scripts</a>
-</div>
-
-
-<div>
-    <h3>2. CNV Detection</h3>
-    <p>
-        Identify CNVs using read-depth based approaches.
-    </p>
-    <a href="detection/index.html">
-        CNV Detection
-    </a>
-</div>
-
-
-
-<div>
-<h3>3. CNV Integration</h3>
-<p>
-Merge CNV calls from multiple callers.
-</p>
-<a href="intergration/index.html">
-    CNV Integration
-</a>
-</div>
-
-
-<div>
-<h3>4. Annotation</h3>
-<p>
-Annotate CNVs with genomic information.
-</p>
-<a href="docs/">Documentation</a>
-</div>
-
-
-</div>
-
+<ul>
+<li><a href="scripts/alignment.sh">alignment.sh</a></li>
+</ul>
 </section>
 
-
-
-<section>
-
-<h2>Repository Resources</h2>
-
+<section id="cnv-detection">
+<h2>2. CNV Detection</h2>
+<p>
+This step identifies copy number variations from whole genome sequencing
+data using CNV calling algorithms. Copy number variations (CNVs) are
+genomic alterations involving deletions or duplications of DNA segments.
+There are four main methods of detecting CNVs with NGS data:
+</p>
 <ul>
+<li>Read-Pair (RP)</li>
+<li>Split-Read (SR)</li>
+<li>Read-Depth (RD)</li>
+<li>Assembly (AS)</li>
+</ul>
+<p>
+Each of these four methods specializes in detecting a specific form or size range of CNV,
+resulting in a trade-off in breakpoint accuracy. None of these methodologies is perfect;
+each brings advantages and disadvantages. To address this, many labs combine different methods,
+such as read-depths with read-pairs, or read-depths with split-reads, to achieve a more holistic analysis.
+</p>
 
-<li>
-<a href="docs/">
-Documentation
-</a>
-</li>
+<h3>Tools Used</h3>
+<ul>
+<li>CNVnator</li>
+<li>CNVcaller</li>
+<li>LUMPY Express</li>
+</ul>
 
+<h3>Methodology</h3>
+<p>
+A read depth approach was used to detect copy number variations. To increase the
+reliability of CNV detection, CNVnator and CNVcaller were used. CNVnator utilizes
+fixed-bin read-depth histograms for sensitive detection of CNVs whereas CNVcaller
+applies population-based normalization and segmentation models to improve breakpoint
+resolution and reduce false positives.
+</p>
 
-<li>
-<a href="slides/">
-Training Slides
-</a>
-</li>
+<h4>CNVnator</h4>
+<p>
+CNV detection using CNVnator was carried out for the autosomal chromosomes only, using a bin
+size of 100 bp. The following steps were run; CNVnator -tree, CNVnator -his, CNVnator -stat,
+CNVnator -partition and CNVnator -call and identification of CNV occurrence in the preset
+window was done. The software calls CNVs per individual and to enhance the CNV prediction
+quality control, raw CNVs were filtered by retaining only those with q0 &lt; 0.5, size &gt;1kb
+and p-value&lt;0.01 based on t-test statistics. A q0 filter removes any CNV calls with q0 &gt; 0.5
+and the metric represents the fraction of reads within a region that have zero mapping quality
+which means reads with multiple mapping locations in the genome. This is crucial because regions
+with q0 &gt; 0.5 are likely enriched for ambiguously mapped reads that potentially lead to false
+positive CNV detection. To compare the results from CNVcaller, individual CNVs were merged using
+50% reciprocal overlap to create population based CNVRs.
+</p>
+<p>
+<a href="scripts/cnvnator.sh">cnvnator.sh</a> &middot;
+<a href="scripts/post_qc_filter_cnvnator.sh">post_qc_filter_cnvnator.sh</a>
+</p>
 
+<h4>CNVcaller</h4>
+<p>
+CNVcaller is a population-based CNV detection software, that analyses population sequencing data
+across individuals simultaneously rather than independently. This approach leverages on using
+population-level read depth information to perform local depth normalization and segmentation
+across samples (adaptive binning instead of fixed bin size used in CNVnator), resulting in reduced
+false positives and improved breakpoint accuracy. Initially, the reference genome used in the
+present study (NIAB_ARS_BosIndicus_Tharparkar_1.0) lacked the duplicated window record files
+required for CNVcaller's absolute number correction. Hence, custom duplicated window record files
+were generated following the official
+<a href="https://github.com/JiangYuLab/CNVcaller" target="_blank" rel="noopener">CNVcaller pipeline</a>.
+Briefly, the reference database for Bos indicus was created using NIAB_ARS_BosIndicus_Tharparkar_1.0
+which was segmented into k-mer sequences (overlapping windows) using the CNVcaller script
+0.1.Kmer_Generate.py with a recommended window size of 800 bp to optimize CNV detection and
+boundary resolution. The resulting k-mer FASTA file was then aligned back to the reference genome
+using BLASR after constructing the suffix array index with sawriter. BLASR alignment was performed
+using the parameters recommended in the CNVcaller documentation for sensitive k-mer mapping.
+Finally, duplicated window record files were generated from the BLASR alignment output using
+0.2.Kmer_Link.py, producing the genome-wide window linkage file required for downstream CNV
+analysis. The resulting reference database and duplicated window files were then used for CNV
+detection in CNVcaller. The custom scripts used for generating the CNVcaller duplicated window
+files and reference database are available on
+<a href="https://github.com/tafarakundai/cnvcaller-custom-reference-db" target="_blank" rel="noopener">GitHub</a>.
+CNVcaller calculated the GC-corrected normalized read depth for each sample to standardize the
+copy number in each window and classify different genotypes. The following CNVcaller parameters
+were used for filtering: -f 0.1 to set the frequency threshold of 10% for downstream analysis,
+-h 3 to retain CNVs shared in at least three samples, and -r 0.5 to set the minimum reciprocal
+overlap to be 50% between CNVs for merging or creating population based CNVRs. Additionally, CNVs
+with a Silhouette score of &gt;0.5 and those located in unplaced scaffolds were excluded from
+further analysis. It is important to note that the CNVcaller filtering thresholds (-f 0.1, -h 3)
+used in this study prioritize high confidence CNVRs and might have reduced sensitivity to rare or
+low frequency variants.
+</p>
+<p>
+<a href="scripts/CNVcaller.sh">CNVcaller.sh</a> &middot;
+<a href="scripts/post_qc_filter_cnvcaller.sh">post_qc_filter_cnvcaller.sh</a>
+</p>
 
-<li>
-<a href="scripts/">
-Pipeline Scripts
-</a>
-</li>
+<h4>LUMPY Express</h4>
+<p>
+LUMPY Express identifies structural variants, including CNVs, using discordant read-pair
+and split-read evidence. This provides breakpoint-level resolution that complements the
+read-depth approaches above. Genotyping and variant typing were performed on the raw LUMPY
+calls as a post-processing step.
+</p>
+<p>
+<a href="scripts/lumpy.sh">lumpy.sh</a> &middot;
+<a href="scripts/lumpy_genotype.sh">lumpy_genotype.sh</a> &middot;
+<a href="scripts/svtype.py">svtype.py</a>
+</p>
+</section>
 
+<section id="cnv-integration">
+<h2>3. CNV Integration</h2>
+<p>
+Once you have results from two or three software the most important part is to intergrate the results.
+In this workflow you will learn how to merge output from two software (CNVcaller and CNVnator).
+If you need a script for merging three software, check out
+<a href="scripts/merging_all3_tools.sh">merging_all3_tools.sh</a>.
+</p>
+<p>
+This step merges CNV calls produced by different detection tools into a
+single, consolidated set of copy number variant regions (CNVRs), reducing
+redundancy and improving confidence in the final call set.
+</p>
 
+<h3>Tools Used</h3>
+<ul>
+<li>CNVnator</li>
+<li>CNVcaller</li>
+<li>LUMPY Express</li>
+</ul>
+
+<h3>Scripts</h3>
+<ul>
+<li><a href="scripts/merging_all3_tools.sh">merging_all3_tools.sh</a></li>
+<li><a href="scripts/merging_cnvnator.py">merging_cnvnator.py</a></li>
+<li><a href="scripts/merged_length_bins.sh">merged_length_bins.sh</a></li>
+<li><a href="scripts/merging_all_3_software/">merging_all_3_software/</a></li>
+<li><a href="scripts/merge_post_processing/">merge_post_processing/</a></li>
+</ul>
+</section>
+
+<section id="annotation">
+<h2>4. Annotation</h2>
+<p>
+Once CNVs have been detected and merged into a consolidated call set, the final
+step is to annotate each variant with genomic context, such as overlapping genes,
+regulatory elements, and known functional regions. This step was carried out
+using ANNOVAR, guided by a chromosome mapping file to match variant coordinates
+to the reference genome build used in this study.
+</p>
+<ul>
+<li><a href="scripts/ANNOVAR.sh">ANNOVAR.sh</a></li>
+<li><a href="scripts/annotation_ANNOVAR/">annotation_ANNOVAR/</a></li>
+<li><a href="scripts/chrom_map.txt">chrom_map.txt</a></li>
+</ul>
+</section>
+
+<section id="scripts">
+<h2>Pipeline Scripts</h2>
+<p>
+Full list of scripts used across the pipeline, organized by step.
+See <a href="scripts/README.md">scripts/README.md</a> for a description
+of each script and how to run the pipeline end to end.
+</p>
+
+<h3>1. Read Alignment</h3>
+<ul>
+<li><a href="scripts/alignment.sh">alignment.sh</a></li>
+</ul>
+
+<h3>2. CNV Detection</h3>
+<ul>
+<li><a href="scripts/cnvnator.sh">cnvnator.sh</a></li>
+<li><a href="scripts/CNVcaller.sh">CNVcaller.sh</a></li>
+<li><a href="scripts/lumpy.sh">lumpy.sh</a></li>
+<li><a href="scripts/post_qc_filter_cnvnator.sh">post_qc_filter_cnvnator.sh</a></li>
+<li><a href="scripts/post_qc_filter_cnvcaller.sh">post_qc_filter_cnvcaller.sh</a></li>
+<li><a href="scripts/lumpy_genotype.sh">lumpy_genotype.sh</a></li>
+<li><a href="scripts/svtype.py">svtype.py</a></li>
+</ul>
+
+<h3>3. CNV Integration</h3>
+<ul>
+<li><a href="scripts/merging_all3_tools.sh">merging_all3_tools.sh</a></li>
+<li><a href="scripts/merging_cnvnator.py">merging_cnvnator.py</a></li>
+<li><a href="scripts/merged_length_bins.sh">merged_length_bins.sh</a></li>
+<li><a href="scripts/merging_all_3_software/">merging_all_3_software/</a></li>
+<li><a href="scripts/merge_post_processing/">merge_post_processing/</a></li>
+</ul>
+
+<h3>4. CNV Annotation</h3>
+<ul>
+<li><a href="scripts/ANNOVAR.sh">ANNOVAR.sh</a></li>
+<li><a href="scripts/annotation_ANNOVAR/">annotation_ANNOVAR/</a></li>
+<li><a href="scripts/chrom_map.txt">chrom_map.txt</a></li>
+</ul>
+
+<h3>5. Visualization</h3>
+<ul>
+<li><a href="scripts/plot_merged_length_bins.py">plot_merged_length_bins.py</a></li>
+<li><a href="scripts/breed_sum_stats.sh">breed_sum_stats.sh</a></li>
+</ul>
+</section>
+
+<section id="resources">
+<h2>Resources</h2>
+<ul>
 <li>
 <a href="data/">
 Example Data
 </a>
 </li>
-
 </ul>
-
 </section>
 
-
-
 <footer>
-
 <p>
 WGS Copy Number Variation Pipeline
 </p>
-
 <p>
 Developed for genomic analysis and training purposes
 </p>
-
 </footer>
-
-
 </body>
-
 </html>
