@@ -31,8 +31,8 @@
 <h2>About the Pipeline</h2>
 <p>
 This repository contains scripts, documentation, training materials,
-and example resources for whole genome sequencing (WGS) copy number
-variation (CNV) analysis.
+and example resources for whole-genome sequencing (WGS) copy number
+variation (CNV) analysis. This pipeline produced the results published in this paper https://doi.org/10.1371/journal.pone.0353468 
 </p>
 <p>
 The workflow integrates CNV detection methods including:
@@ -58,7 +58,7 @@ Prepare aligned BAM files from sequencing reads.
 <section id="cnv-detection">
 <h2>2. CNV Detection</h2>
 <p>
-This step identifies copy number variations from whole genome sequencing
+This step identifies copy number variations from whole-genome sequencing
 data using CNV calling algorithms. Copy number variations (CNVs) are
 genomic alterations involving deletions or duplications of DNA segments.
 There are four main methods of detecting CNVs with NGS data:
@@ -87,24 +87,24 @@ such as read-depths with read-pairs, or read-depths with split-reads, to achieve
 <p>
 A read depth approach was used to detect copy number variations. To increase the
 reliability of CNV detection, CNVnator and CNVcaller were used. CNVnator utilizes
-fixed-bin read-depth histograms for sensitive detection of CNVs whereas CNVcaller
+fixed-bin read-depth histograms for sensitive detection of CNVs, whereas CNVcaller
 applies population-based normalization and segmentation models to improve breakpoint
-resolution and reduce false positives.
+resolution and reduce false positives. However, I also included LUMPY scripts incase you want to use both read depth tools combined with split reads tools. 
 </p>
 
 <h4>CNVnator</h4>
 <p>
 CNV detection using CNVnator was carried out for the autosomal chromosomes only, using a bin
-size of 100 bp. The following steps were run; CNVnator -tree, CNVnator -his, CNVnator -stat,
+size of 100 bp. Depending on the coverage you have in your data you might need to use a different bin size. The following steps were run; CNVnator -tree, CNVnator -his, CNVnator -stat,
 CNVnator -partition and CNVnator -call and identification of CNV occurrence in the preset
-window was done. The software calls CNVs per individual and to enhance the CNV prediction
+window was done. The software calls CNVs per individual, and to enhance the CNV prediction
 quality control, raw CNVs were filtered by retaining only those with q0 &lt; 0.5, size &gt;1kb
 and p-value&lt;0.01 based on t-test statistics. A q0 filter removes any CNV calls with q0 &gt; 0.5
 and the metric represents the fraction of reads within a region that have zero mapping quality
 which means reads with multiple mapping locations in the genome. This is crucial because regions
 with q0 &gt; 0.5 are likely enriched for ambiguously mapped reads that potentially lead to false
 positive CNV detection. To compare the results from CNVcaller, individual CNVs were merged using
-50% reciprocal overlap to create population based CNVRs.
+50% reciprocal overlap to create population-based CNVRs.
 </p>
 <p>
 <a href="scripts/cnvnator.sh">cnvnator.sh</a> &middot;
@@ -113,7 +113,7 @@ positive CNV detection. To compare the results from CNVcaller, individual CNVs w
 
 <h4>CNVcaller</h4>
 <p>
-CNVcaller is a population-based CNV detection software, that analyses population sequencing data
+CNVcaller is a population-based CNV detection software that analyses population sequencing data
 across individuals simultaneously rather than independently. This approach leverages on using
 population-level read depth information to perform local depth normalization and segmentation
 across samples (adaptive binning instead of fixed bin size used in CNVnator), resulting in reduced
@@ -135,10 +135,10 @@ detection in CNVcaller. The custom scripts used for generating the CNVcaller dup
 files and reference database are available on
 <a href="https://github.com/tafarakundai/cnvcaller-custom-reference-db" target="_blank" rel="noopener">GitHub</a>.
 CNVcaller calculated the GC-corrected normalized read depth for each sample to standardize the
-copy number in each window and classify different genotypes. The following CNVcaller parameters
-were used for filtering: -f 0.1 to set the frequency threshold of 10% for downstream analysis,
+copy number in each window and classify different genotypes.
+The following CNVcaller parameters were used for filtering: -f 0.1 to set the frequency threshold of 10% for downstream analysis,
 -h 3 to retain CNVs shared in at least three samples, and -r 0.5 to set the minimum reciprocal
-overlap to be 50% between CNVs for merging or creating population based CNVRs. Additionally, CNVs
+overlap to be 50% between CNVs for merging or creating population-based CNVRs. Additionally, CNVs
 with a Silhouette score of &gt;0.5 and those located in unplaced scaffolds were excluded from
 further analysis. It is important to note that the CNVcaller filtering thresholds (-f 0.1, -h 3)
 used in this study prioritize high confidence CNVRs and might have reduced sensitivity to rare or
@@ -166,8 +166,8 @@ calls as a post-processing step.
 <section id="cnv-integration">
 <h2>3. CNV Integration</h2>
 <p>
-Once you have results from two or three software the most important part is to intergrate the results.
-In this workflow you will learn how to merge output from two software (CNVcaller and CNVnator).
+Once you have results from two or three software, the most important part is to integrate the results.
+In this workflow, you will learn how to merge output from two software (CNVcaller and CNVnator).
 If you need a script for merging three software, check out
 <a href="scripts/merging_all3_tools.sh">merging_all3_tools.sh</a>.
 </p>
@@ -175,6 +175,7 @@ If you need a script for merging three software, check out
 This step merges CNV calls produced by different detection tools into a
 single, consolidated set of copy number variant regions (CNVRs), reducing
 redundancy and improving confidence in the final call set.
+Please note you might need to carry out a sensitivity analysis depending on the parameters you choose for the merging.
 </p>
 
 <h3>Tools Used</h3>
