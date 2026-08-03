@@ -32,9 +32,10 @@ such as read-depths with read-pairs, or read-depths with split-reads, to achieve
 <section>
 <h2>Tools Used</h2>
 <ul>
-<li>CNVnator</li>
-<li>CNVcaller</li>
-<li>LUMPY Express</li>
+<li><a href="cnvnator.sh">CNVnator</a></li>
+<li><a href="CNVcaller.sh">CNVcaller</a></li>
+<li><a href="lumpy.sh">LUMPY Express</a></li>
+<li><a href="lumpy_genotype.sh">LUMPY Genotyping</a></li>
 </ul>
 </section>
 <section>
@@ -47,7 +48,7 @@ applies population-based normalization and segmentation models to improve breakp
 resolution and reduce false positives.
 </p>
 
-<h3>CNVnator</h3>
+<h3><a href="cnvnator.sh">CNVnator</a></h3>
 <p>
 CNV detection using CNVnator was carried out for the autosomal chromosomes only, using a bin
 size of 100 bp. The following steps were run; CNVnator -tree, CNVnator -his, CNVnator -stat,
@@ -62,7 +63,7 @@ positive CNV detection. To compare the results from CNVcaller, individual CNVs w
 50% reciprocal overlap to create population based CNVRs.
 </p>
 
-<h3>CNVcaller</h3>
+<h3><a href="CNVcaller.sh">CNVcaller</a></h3>
 <p>
 CNVcaller is a population-based CNV detection software, that analyses population sequencing data
 across individuals simultaneously rather than independently. This approach leverages on using
